@@ -9,6 +9,9 @@
     "setup": "node setupDatabase.js",
     "dev": "nodemon server.js"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

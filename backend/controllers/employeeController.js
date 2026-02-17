@@ -3,7 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const sendEmail = require("../utils/sendEmail");
 
-/* 🔥 ADMIN CREATES EMPLOYEE */
+/* ADMIN CREATES EMPLOYEE */
 exports.createEmployee = async (req, res) => {
   try {
     const { name, email, contactNumber, dob, dateOfJoining } = req.body;
@@ -30,7 +30,7 @@ exports.createEmployee = async (req, res) => {
       });
     }
 
-    /* 1️⃣ CREATE EMPLOYEE */
+    /* 1) CREATE EMPLOYEE */
     const employee = await Employee.create({
       name,
       email,
@@ -39,11 +39,11 @@ exports.createEmployee = async (req, res) => {
       dateOfJoining
     });
 
-    /* 2️⃣ AUTO-GENERATE PASSWORD */
+    /* 2) AUTO-GENERATE PASSWORD */
     const plainPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    /* 3️⃣ CREATE USER ACCOUNT */
+    /* 3) CREATE USER ACCOUNT */
     await User.create({
       name,
       email,
@@ -52,7 +52,7 @@ exports.createEmployee = async (req, res) => {
       employeeId: employee._id
     });
 
-    /* 4️⃣ SEND EMAIL */
+    /* 4) SEND EMAIL */
     await sendEmail(
       email,
       "Your Employee Login Credentials",
@@ -69,7 +69,7 @@ Please change your password after login.
 - Payroll System`
     );
 
-    /* 5️⃣ SEND RESPONSE (PASSWORD SHOWN ONCE) */
+    /* 5) SEND RESPONSE (PASSWORD SHOWN ONCE) */
     res.status(201).json({
       message: "Employee and user account created",
       credentials: {
@@ -77,13 +77,12 @@ Please change your password after login.
         password: plainPassword
       }
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* 📋 GET ALL EMPLOYEES (PAGINATED + SEARCH) */
+/* GET ALL EMPLOYEES (PAGINATED + SEARCH) */
 exports.getEmployees = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -121,7 +120,7 @@ exports.getEmployees = async (req, res) => {
   }
 };
 
-/* 🗑️ DELETE EMPLOYEE */
+/* DELETE EMPLOYEE */
 exports.deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,6 +1,6 @@
 const Salary = require("../models/Salary");
 
-/* 💰 CREATE SALARY */
+/* CREATE SALARY */
 exports.createSalary = async (req, res) => {
   try {
     const { employeeId, basic, hra, conveyance } = req.body;
@@ -11,24 +11,24 @@ exports.createSalary = async (req, res) => {
     // PF CALCULATIONS
     // Employee PF: 12% of total earnings
     const employeePF = Math.round(totalEarnings * 0.12);
-    
+
     // Employer PF: 12% total
     // - 8.33% goes to employee pension
     // - Remaining (~3.67%) goes to employer PF
     const employerPFTotal = Math.round(totalEarnings * 0.12);
     const employerPensionContribution = Math.round(employerPFTotal * 0.8333);
     const employerPFContribution = employerPFTotal - employerPensionContribution;
-    
+
     // ESIC CALCULATIONS (Employees' State Insurance Corporation)
     // Rules:
-    // - If wages > ₹21,000/month: ESIC is not applicable
-    // - If wages <= ₹21,000/month:
+    // - If wages > Rs 21,000/month: ESIC is not applicable
+    // - If wages <= Rs 21,000/month:
     //   - Employee contribution: 0.75% of gross wages
     //   - Employer contribution: 3.25% of gross wages
     const esicApplicable = totalEarnings <= 21000;
     const employeeESIC = esicApplicable ? Math.round(totalEarnings * 0.0075) : 0;
     const employerESIC = esicApplicable ? Math.round(totalEarnings * 0.0325) : 0;
-    
+
     // Employee pension contribution (employer's pension component)
     const pensionContribution = employerPensionContribution;
 
@@ -81,7 +81,7 @@ exports.getEmployeeSalary = async (req, res) => {
     const { employeeId } = req.params;
     const loggedInUser = req.user;
 
-    /* 🛑 USER CAN SEE ONLY OWN SALARY */
+    /* USER CAN SEE ONLY OWN SALARY */
     if (
       loggedInUser.role === "user" &&
       loggedInUser.employeeId?.toString() !== employeeId
@@ -91,8 +91,10 @@ exports.getEmployeeSalary = async (req, res) => {
       });
     }
 
-    const salary = await Salary.findOne({ employeeId })
-      .populate("employeeId", "name email employeeCode");
+    const salary = await Salary.findOne({ employeeId }).populate(
+      "employeeId",
+      "name email employeeCode"
+    );
 
     if (!salary) {
       return res.status(404).json({ message: "Salary not found" });

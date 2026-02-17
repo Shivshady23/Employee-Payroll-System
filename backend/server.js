@@ -1,136 +1,18 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const path = require("path");
+const app = require("./app");
+const { connectDatabase } = require("./config/db");
+const { getRuntimeConfig } = require("./config/env");
 
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config({ path: path.join(__dirname, ".env") });
-}
+const { mongoUri, port } = getRuntimeConfig();
 
-const app = express();
-
-/* ===== MIDDLEWARE ===== */
-app.use(cors());
-app.use(express.json());
-mongoose.set("bufferCommands", false);
-
-/* ===== DB ===== */
-let connectPromise;
-
-const getSanitizedEnvironment = () => {
-  const mongoUri = (process.env.MONGO_URI || "")
-    .trim()
-    .replace(/^['"]|['"]$/g, "");
-  const jwtSecret = (process.env.JWT_SECRET || "").trim();
-
-  return { mongoUri, jwtSecret };
-};
-
-const validateEnvironment = () => {
-  const missing = [];
-  const { mongoUri, jwtSecret } = getSanitizedEnvironment();
-
-  if (!mongoUri) {
-    missing.push("MONGO_URI");
-  }
-
-  if (!jwtSecret) {
-    missing.push("JWT_SECRET");
-  }
-
-  if (missing.length > 0) {
-    throw new Error(`Missing environment variable(s): ${missing.join(", ")}`);
-  }
-
-  if (!/^mongodb(\+srv)?:\/\//.test(mongoUri)) {
-    throw new Error(
-      'Invalid MONGO_URI format. It must start with "mongodb://" or "mongodb+srv://".'
-    );
-  }
-
-  process.env.MONGO_URI = mongoUri;
-  process.env.JWT_SECRET = jwtSecret;
-};
-
-const connectDatabase = async () => {
-  validateEnvironment();
-
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
-  }
-
-  if (connectPromise) {
-    return connectPromise;
-  }
-
-  connectPromise = mongoose
-    .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000 })
-    .then(() => {
-      console.log("MongoDB connected");
-      return mongoose.connection;
-    })
-    .finally(() => {
-      connectPromise = null;
+// Render entrypoint: boot DB first, then bind to process.env.PORT.
+connectDatabase(mongoUri)
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
     });
-
-  return connectPromise;
-};
-
-app.use(async (req, res, next) => {
-  if (req.path === "/api/health") {
-    return next();
-  }
-
-  try {
-    await connectDatabase();
-    return next();
-  } catch (error) {
-    return res.status(503).json({
-      message:
-        "Database not connected. Check MONGO_URI and Atlas Network Access allowlist.",
-      error: error.message
-    });
-  }
-});
-
-/* ===== ROUTES ===== */
-const employeeRoutes = require("./routes/employeeRoutes");
-const salaryRoutes = require("./routes/salaryRoutes");
-const authRoutes = require("./routes/authRoutes");
-
-app.use("/api/employees", employeeRoutes);
-app.use("/api/salary", salaryRoutes);
-app.use("/api/auth", authRoutes);
-
-app.get("/api/health", (_req, res) => {
-  const dbConnected = mongoose.connection.readyState === 1;
-
-  return res.status(dbConnected ? 200 : 503).json({
-    status: dbConnected ? "ok" : "degraded",
-    dbConnected
+  })
+  .catch(error => {
+    console.error(`Failed to start server: ${error.message}`);
+    process.exit(1);
   });
-});
-
-/* ===== SERVER ===== */
-// Vercel provides the server; exporting the app creates a serverless function.
-module.exports = app;
-
-if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 5000;
-
-  connectDatabase()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-      });
-    })
-    .catch(error => {
-      console.error(`Failed to start server: ${error.message}`);
-      process.exit(1);
-    });
-} else {
-  connectDatabase().catch(error => {
-    console.error(`Initial MongoDB connection failed: ${error.message}`);
-  });
-}
 

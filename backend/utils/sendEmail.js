@@ -2,9 +2,9 @@ const nodemailer = require("nodemailer");
 
 const sendEmail = async (to, subject, text) => {
   try {
-    // Check if credentials are configured
+    // Keep behavior same: if creds are missing, do not fail request.
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log("📧 Email service disabled - set EMAIL_USER and EMAIL_PASS in .env");
+      console.log("Email service disabled - set EMAIL_USER and EMAIL_PASS in env");
       console.log(`Email would have been sent to: ${to}`);
       return;
     }
@@ -26,7 +26,7 @@ const sendEmail = async (to, subject, text) => {
       text
     });
 
-    console.log(`✅ Email sent to ${to}`);
+    console.log(`Email sent to ${to}`);
   } catch (error) {
     console.error("Email error:", error.message);
   }

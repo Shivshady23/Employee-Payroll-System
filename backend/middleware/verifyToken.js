@@ -12,14 +12,13 @@ module.exports = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 THIS IS REQUIRED FOR getMySalary
     req.user = {
       id: decoded.id,
       role: decoded.role
     };
 
     next();
-  } catch (err) {
+  } catch (_err) {
     res.status(401).json({ message: "Invalid token" });
   }
 };

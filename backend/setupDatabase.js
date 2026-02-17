@@ -1,50 +1,27 @@
-const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const path = require("path");
-
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config({ path: path.join(__dirname, ".env") });
-}
-
+const { connectDatabase, mongoose } = require("./config/db");
+const { getMongoUri } = require("./config/env");
 const User = require("./models/User");
-
-const getSanitizedMongoUri = () =>
-  (process.env.MONGO_URI || "")
-    .trim()
-    .replace(/^['"]|['"]$/g, "");
 
 const setupDatabase = async () => {
   try {
-    const mongoUri = getSanitizedMongoUri();
+    const mongoUri = getMongoUri();
 
-    if (!mongoUri) {
-      throw new Error("MONGO_URI is missing. Set it in your environment.");
-    }
+    await connectDatabase(mongoUri);
+    console.log("Connected to MongoDB");
 
-    if (!/^mongodb(\+srv)?:\/\//.test(mongoUri)) {
-      throw new Error(
-        'Invalid MONGO_URI format. It must start with "mongodb://" or "mongodb+srv://".'
-      );
-    }
-
-    // Connect to MongoDB
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
-    console.log("✅ Connected to MongoDB");
-
-    // Check if test users already exist
     const adminExists = await User.findOne({ email: "admin@example.com" });
     const superadminExists = await User.findOne({ email: "superadmin@example.com" });
 
     if (adminExists && superadminExists) {
-      console.log("✅ Test users already exist - skipping setup");
+      console.log("Test users already exist - skipping setup");
+      await mongoose.connection.close();
       process.exit(0);
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash("password123", 10);
-    console.log("✅ Password hashed");
+    console.log("Password hashed");
 
-    // Create admin user if doesn't exist
     if (!adminExists) {
       await User.create({
         name: "Admin User",
@@ -53,10 +30,9 @@ const setupDatabase = async () => {
         role: "admin",
         employeeId: null
       });
-      console.log("✅ Admin user created");
+      console.log("Admin user created");
     }
 
-    // Create superadmin user if doesn't exist
     if (!superadminExists) {
       await User.create({
         name: "Superadmin User",
@@ -65,18 +41,22 @@ const setupDatabase = async () => {
         role: "superadmin",
         employeeId: null
       });
-      console.log("✅ Superadmin user created");
+      console.log("Superadmin user created");
     }
 
-    console.log("\n🎉 Database setup complete!");
-    console.log("\n📝 Test Credentials:");
-    console.log("├─ Admin:      admin@example.com / password123");
-    console.log("└─ Superadmin: superadmin@example.com / password123");
-    console.log("\n✨ Ready to start the application!");
+    console.log("\nDatabase setup complete.");
+    console.log("\nTest Credentials:");
+    console.log("Admin:      admin@example.com / password123");
+    console.log("Superadmin: superadmin@example.com / password123");
+    console.log("\nReady to start the application.");
 
+    await mongoose.connection.close();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Setup error:", error.message);
+    console.error("Setup error:", error.message);
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+    }
     process.exit(1);
   }
 };
