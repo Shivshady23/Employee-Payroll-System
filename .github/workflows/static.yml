@@ -43,6 +43,8 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: frontend
+        env:
+          PUBLIC_URL: /Employee-Payroll-System
       - name: Disable Jekyll
         run: touch frontend/build/.nojekyll
       - name: Setup Pages

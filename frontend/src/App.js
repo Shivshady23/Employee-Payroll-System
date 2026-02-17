@@ -8,8 +8,10 @@ import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
+  const basename = process.env.PUBLIC_URL || "/";
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
