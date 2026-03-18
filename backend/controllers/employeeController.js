@@ -85,6 +85,7 @@ Please change your password after login.
 /* GET ALL EMPLOYEES (PAGINATED + SEARCH) */
 exports.getEmployees = async (req, res) => {
   try {
+    const isUser = req.user?.role === "user";
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || "";
@@ -92,14 +93,16 @@ exports.getEmployees = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const searchRegex = new RegExp(search, "i");
-    const filter = {
-      $or: [
-        { name: searchRegex },
-        { email: searchRegex },
-        { contactNumber: searchRegex },
-        { employeeCode: searchRegex }
-      ]
-    };
+    const filter = isUser
+      ? { _id: req.user.employeeId }
+      : {
+          $or: [
+            { name: searchRegex },
+            { email: searchRegex },
+            { contactNumber: searchRegex },
+            { employeeCode: searchRegex }
+          ]
+        };
 
     const employees = await Employee.find(filter)
       .skip(skip)
@@ -117,6 +120,24 @@ exports.getEmployees = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+/* GET LOGGED-IN EMPLOYEE */
+exports.getMyEmployee = async (req, res) => {
+  try {
+    if (!req.user?.employeeId) {
+      return res.status(404).json({ message: "Employee mapping not found" });
+    }
+
+    const employee = await Employee.findById(req.user.employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    return res.json(employee);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 

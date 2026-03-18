@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import AttendancePage from "./pages/user/AttendancePage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -31,6 +32,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["user"]}>
               <UserDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/user/attendance"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <AttendancePage />
             </ProtectedRoute>
           }
         />

@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createEmployee,
   getEmployees,
-  deleteEmployee
+  deleteEmployee,
+  getMyEmployee
 } = require("../controllers/employeeController");
 
 const auth = require("../middleware/authMiddleware");
@@ -15,6 +16,7 @@ router.post("/create", auth, role("admin", "superadmin"), createEmployee);
 
 /* USER + ADMIN + SUPERADMIN */
 router.get("/", auth, role("user", "admin", "superadmin"), getEmployees);
+router.get("/me", auth, role("user", "admin", "superadmin"), getMyEmployee);
 
 /* SUPERADMIN ONLY */
 router.delete("/:id", auth, role("superadmin"), deleteEmployee);

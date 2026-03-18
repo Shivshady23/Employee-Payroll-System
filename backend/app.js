@@ -6,6 +6,7 @@ const { getRuntimeConfig, parseCorsOrigins } = require("./config/env");
 const employeeRoutes = require("./routes/employeeRoutes");
 const salaryRoutes = require("./routes/salaryRoutes");
 const authRoutes = require("./routes/authRoutes");
+const attendanceRoutes = require("./routes/attendanceRoutes");
 
 const app = express();
 const { mongoUri, corsOrigin } = getRuntimeConfig();
@@ -57,6 +58,7 @@ app.use(async (req, res, next) => {
 app.use("/api/employees", employeeRoutes);
 app.use("/api/salary", salaryRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 app.get("/api/health", (_req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;
