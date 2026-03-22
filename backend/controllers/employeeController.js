@@ -1,7 +1,8 @@
 const Employee = require("../models/Employee");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
+const sendCredentialEmail = require("../utils/sendCredentialEmail");
 
 /* ADMIN CREATES EMPLOYEE */
 exports.createEmployee = async (req, res) => {
@@ -40,8 +41,8 @@ exports.createEmployee = async (req, res) => {
     });
 
     /* 2) AUTO-GENERATE PASSWORD */
-    const plainPassword = Math.random().toString(36).slice(-8);
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    const tempPassword = crypto.randomBytes(8).toString("hex");
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     /* 3) CREATE USER ACCOUNT */
     await User.create({
@@ -52,30 +53,31 @@ exports.createEmployee = async (req, res) => {
       employeeId: employee._id
     });
 
-    /* 4) SEND EMAIL */
-    await sendEmail(
-      email,
-      "Your Employee Login Credentials",
-      `Welcome ${name},
+    /* 4) SEND CREDENTIAL EMAIL (non-blocking for employee creation) */
+    let emailSent = true;
+    try {
+      await sendCredentialEmail({
+        name: employee.name,
+        email: employee.email,
+        loginId: employee.email,
+        password: tempPassword,
+        employeeCode: employee.employeeCode
+      });
+    } catch (err) {
+      emailSent = false;
+      console.error("Email sending failed:", err);
+    }
 
-Your account has been created.
-
-Login Details:
-Email: ${email}
-Password: ${plainPassword}
-
-Please change your password after login.
-
-- Payroll System`
-    );
-
-    /* 5) SEND RESPONSE (PASSWORD SHOWN ONCE) */
+    /* 5) SEND RESPONSE (PASSWORD SHOWN ONCE AS FALLBACK) */
     res.status(201).json({
-      message: "Employee and user account created",
-      credentials: {
-        email,
-        password: plainPassword
-      }
+      success: true,
+      message: "Employee created successfully",
+      data: {
+        employee,
+        loginId: employee.email,
+        tempPassword
+      },
+      emailSent
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

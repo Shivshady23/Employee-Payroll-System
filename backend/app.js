@@ -7,9 +7,11 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const salaryRoutes = require("./routes/salaryRoutes");
 const authRoutes = require("./routes/authRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const payslipRoutes = require("./routes/payslipRoutes");
 
 const app = express();
 const { mongoUri, corsOrigin } = getRuntimeConfig();
+app.set("trust proxy", true);
 
 const allowedOrigins = new Set(parseCorsOrigins(corsOrigin));
 const allowAllOrigins = allowedOrigins.size === 0;
@@ -59,6 +61,7 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/salary", salaryRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/payslip", payslipRoutes);
 
 app.get("/api/health", (_req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;

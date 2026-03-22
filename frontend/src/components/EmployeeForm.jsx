@@ -101,15 +101,21 @@ const EmployeeForm = ({ onEmployeeCreated }) => {
 
     try {
       const res = await api.post("/employees/create", formData);
-      
-      // Show credentials in alert
-      alert(
-        `✅ Employee Created Successfully!\n\n` +
-        `Employee Code: ${res.data.credentials.email.split('@')[0]}\n` +
-        `Login Email: ${res.data.credentials.email}\n` +
-        `Password: ${res.data.credentials.password}\n\n` +
-        `Please note down these credentials for future login.`
-      );
+      const { data, emailSent } = res.data;
+      const employeeEmail = data?.loginId || formData.email;
+
+      if (emailSent) {
+        alert(`Employee created! Login credentials have been sent to ${employeeEmail}`);
+      } else {
+        alert(
+          `Employee Created Successfully!\n\n` +
+            `Employee Code: ${data?.employee?.employeeCode || "N/A"}\n` +
+            `Login Email: ${data?.loginId || "N/A"}\n` +
+            `Password: ${data?.tempPassword || "N/A"}\n\n` +
+            `Please note down these credentials for future login.`
+        );
+        alert("Email could not be sent. Please share credentials manually.");
+      }
 
       setFormData({
         name: "",
