@@ -8,6 +8,7 @@ const salaryRoutes = require("./routes/salaryRoutes");
 const authRoutes = require("./routes/authRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const payslipRoutes = require("./routes/payslipRoutes");
+const aiAssistantRoutes = require("./routes/aiAssistantRoutes");
 
 const app = express();
 const { mongoUri, corsOrigin } = getRuntimeConfig();
@@ -62,6 +63,7 @@ app.use("/api/salary", salaryRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payslip", payslipRoutes);
+app.use("/api/ai", aiAssistantRoutes);
 
 app.get("/api/health", (_req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;

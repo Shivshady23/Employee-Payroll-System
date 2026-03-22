@@ -51,7 +51,7 @@ const Login = () => {
               className="login-logo"
             />
           </div>
-          <h1 className="login-title">Chauhan Payroll</h1>
+          <h1 className="login-title">Chauhan Tech Solution</h1>
           <p className="login-subtitle">Employee Payroll System</p>
         </div>
 
