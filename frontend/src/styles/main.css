@@ -269,7 +269,8 @@ form select:focus {
 
 .netpay-section {
   border-left-color: #059669;
-  background: #f0fdf4 !important;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
 }
 
 .netpay-section strong {
@@ -1338,6 +1339,16 @@ button:hover:not(:disabled),
 .badge {
   background: #3d2f17;
   color: #ffd27c;
+}
+
+.netpay-section {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.netpay-section strong,
+.preview-netpay {
+  color: #86efac;
 }
 
 .login-page {
