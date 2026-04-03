@@ -621,7 +621,7 @@ input[type="text"] {
   color: #2c3e50;
 }
 
-.salary-section p .total {
+.salary-section p.total {
   border-top: 2px solid #bdc3c7;
   padding-top: 10px;
   margin-top: 15px;

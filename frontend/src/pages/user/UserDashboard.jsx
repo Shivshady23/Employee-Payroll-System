@@ -44,6 +44,11 @@ const UserDashboard = () => {
     navigate("/login");
   };
 
+  const totalEarnings = Number(salary?.totalEarnings || 0);
+  const totalDeductions = Number(salary?.employeePF || 0) + Number(salary?.employeeESIC || 0);
+  const netPay = totalEarnings - totalDeductions;
+  const employerPension = Number(salary?.employerPensionContribution ?? salary?.pensionContribution ?? 0);
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -89,7 +94,7 @@ const UserDashboard = () => {
             ) : salary ? (
               <div className="salary-card">
                 <div className="salary-section">
-                  <h3>Earnings</h3>
+                  <h3>CTC</h3>
                   <p><strong>Basic Salary:</strong> Rs {salary.basic.toLocaleString()}</p>
                   {salary.applyProration && salary.proratedBasic !== null && (
                     <p><strong>Prorated Basic:</strong> Rs {salary.proratedBasic.toLocaleString()}</p>
@@ -97,20 +102,19 @@ const UserDashboard = () => {
                   <p><strong>HRA:</strong> Rs {salary.hra.toLocaleString()}</p>
                   <p><strong>Conveyance:</strong> Rs {salary.conveyance.toLocaleString()}</p>
                   <p className="total">
-                    <strong>Total Earnings:</strong> Rs {salary.totalEarnings.toLocaleString()}
+                    <strong>Total CTC:</strong> Rs {salary.totalEarnings.toLocaleString()}
                   </p>
                 </div>
 
                 <div className="salary-section">
                   <h3>Deductions</h3>
                   <p><strong>Employee PF (12%):</strong> Rs {salary.employeePF.toLocaleString()}</p>
-                  <p>
-                    <strong>Pension Contribution (5%):</strong> Rs{" "}
-                    {salary.pensionContribution.toLocaleString()}
-                  </p>
                   {salary.employeeESIC > 0 && (
                     <p><strong>Employee ESIC:</strong> Rs {salary.employeeESIC.toLocaleString()}</p>
                   )}
+                  <p className="total">
+                    <strong>Total Deductions:</strong> Rs {totalDeductions.toLocaleString()}
+                  </p>
                 </div>
 
                 <div className="salary-section">
@@ -119,9 +123,20 @@ const UserDashboard = () => {
                     <strong>Employer Contributions (3.67%):</strong> Rs{" "}
                     {salary.employerPF.toLocaleString()}
                   </p>
+                  <p>
+                    <strong>Employer Pension Contribution (8.33%):</strong> Rs{" "}
+                    {employerPension.toLocaleString()}
+                  </p>
                   {salary.employerESIC > 0 && (
                     <p><strong>Employer ESIC:</strong> Rs {salary.employerESIC.toLocaleString()}</p>
                   )}
+                </div>
+
+                <div className="salary-section">
+                  <h3>Net Pay</h3>
+                  <p className="total">
+                    <strong>Amount Payable (After Deductions):</strong> Rs {netPay.toLocaleString()}
+                  </p>
                 </div>
               </div>
             ) : (
